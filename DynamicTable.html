@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Table Manipulation| JQUERY</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<style>
+.tableFixHead {
+  overflow-y: auto;
+  height: 200px;
+  margin-top: -1px;  
+}
+.tableFixHead th {
+  position: sticky;
+  top: 0;
+  z-index:4;
+}
+table thead th{
+    color:#fff;
+    background-color: #337ab7;
+    border-color: #337ab7;
+}
+
+</style>
+<script>
+$(document).ready(function() {
+var userList=	[
+					{userName:'Raju',   userRole:'Admin',  isSave:'Yes', isFullAccess:'Yes', isEdit:'Yes',  isDelete:'No'},
+					{userName:'Azad',   userRole:'Manager',isSave:'Yes', isFullAccess:'No',  isEdit:'Yes',  isDelete:'No'},
+					{userName:'Aminul', userRole:'User',   isSave:'Yes', isFullAccess:'No',  isEdit:'Yes',  isDelete:'Yes'},
+					{userName:'Sohel',  userRole:'User',   isSave:'No',  isFullAccess:'Yes', isEdit:'No',   isDelete:'Yes'}
+				];
+				
+if($('#userName').val()==''|| $('#userName').val()=='undefined' || $('#userName').val()==null){
+	$("#btnAdd").attr("disabled", true);
+}
+else{
+	$("#btnAdd").attr("disabled", false);
+}
+
+$('.panel-heading').text('You are not logged in. ');
+ShowButton("btnAdd");
+$(".alert ").hide();
+ClearAllField();
+$("#btnUpdate").hide();
+
+$("#btnAdd").click(function() {
+	ValidateForm();
+	if(!isFormInvalid){
+		var pUserName=$('#userName').val();
+		var data=userList.find(item => item.userName=== pUserName);  
+		var name = $("#name").val();
+		var email = $("#email").val();
+		var pEdit='';
+		var pDelete='';
+		if(data.isEdit=='Yes'){
+			pEdit='<a class="btn btn-xs edit-record" onclik="Edit(this)" ><i class="glyphicon glyphicon-edit"></i></a> <i style="color:grey">|</i> ';
+		}else{
+			pEdit='<a class="btn btn-xs edit-record" disabled="disabled" data-toggle="tooltip" title="You do not have permission for edit!"><i class="glyphicon glyphicon-edit"></i></a> <i style="color:grey">|</i> ';
+		}
+		if(data.isDelete=='Yes'){
+			pDelete='<a class="btn btn-xs delete-record"  ><i class="glyphicon glyphicon-trash"style="color:red;" ></i></a>';
+		}else{
+			pDelete='<a class="btn btn-xs" disabled="disabled" data-toggle="tooltip" title="You do not have permission for delete.!"><i class="glyphicon glyphicon-trash"style="color:red;" disabled="disabled"></i></a>';
+		}
+		var markup = "<tr>" +
+							'<td>' + name + '</td>' +
+							'<td>' + email + '</td>"' +
+							'<td>' + (pEdit+pDelete)+'</td>' +
+					"</tr>";
+		$("table tbody").append(markup);
+		ClearAllField();
+	}
+});
+$("#btnUpdate").click(function() {
+	ValidateForm();
+	if(!isFormInvalid){
+		var name = $("#name").val();
+		var email = $("#email").val();
+		var index = $("#hiddenValue").val();
+		var row = $("#EmpTable tbody").find('tr').eq(index);
+		row.find("td:eq(0)").text(name);
+		row.find("td:eq(1)").text(email);
+		ShowButton("btnAdd");
+		ClearAllField();
+	}
+});
+var isFormInvalid=true;
+$(document).on('click', '.edit-record', function() {		
+	ShowButton("btnUpdate");
+	var rowIndex = $(this).closest('td').parent()[0].sectionRowIndex;
+	$("#hiddenValue").val(rowIndex);
+	var vTr = $(this).closest('tr');
+	var vName = vTr.find("td:eq(0)").text();
+	var vEmail = vTr.find("td:eq(1)").text();
+	$("#name").val(vName);
+	$("#email").val(vEmail);
+});
+
+$("#clear").click(function() {
+	ClearAllField();
+	ShowButton("btnAdd");
+	$(".alert ").hide();
+});
+
+$(".close").click(function(){
+	$(".alert ").hide();
+});
+$('#btnLoadUser').click(function(){	
+var btnLoadUserText=$('#btnLoadUser').val();
+if(btnLoadUserText=='Load'){
+	var pUserName=$('#userName').val();	  
+	if(pUserName=='' || pUserName=='undefined' || pUserName==null){			  		
+		$("#errorMessgSpan").text('');			
+		$("#errorMessgSpan").text(pUserName+' is not found.');
+		$(".alert ").show();
+		$("#userName").attr("disabled", false);
+		$("#btnLoadUser").attr('value', 'Load');
+		$("#lblUserName").text('');
+
+	}
+	else{
+		var data=userList.find(item => item.userName === pUserName);
+		$('.panel-heading').show();
+		$("#lblUserName").text("User Name: "+data.userName +"   Use Role:"+ data.userRole);		
+		if(data.isSave=='Yes'){
+			$("#btnAdd").attr("disabled", false);
+		}else{
+			$("#btnAdd").attr("disabled", true);
+		}
+
+		$(".alert ").hide();	 
+		$("#userName").attr("disabled", true);
+		$("#btnLoadUser").attr('value', 'Log Out');
+		$('.panel-heading').text('You are logged in. ');
+	}
+}
+else{
+	$('#userName').val('');	
+	$("#userName").attr("disabled", false);
+	$("#btnAdd").attr("disabled", true);
+	$("#btnLoadUser").attr('value', 'Load');
+	$("table tbody").empty();
+	$("#lblUserName").text(' ');
+   }
+});
+function ValidateForm(){		
+	var errorMessg="";
+	var name=$("#name").val();
+	var email=$("#email").val();
+	if(name=="" || name=='undefined'|| name ==null){
+		if(email=="" || email=='undefined'|| email==null){
+			errorMessg="Name and Email are required.";
+		}else{
+			errorMessg="Name is required.";
+		}
+		isFormInvalid	=true;
+	}
+	else if(email=="" || email=='undefined'|| email ==null){
+		if(name=="" || name=='undefined'|| name==null){
+			errorMessg="Name and Email are required.";
+		}else{
+			errorMessg="Email is required.";
+		}	
+		isFormInvalid=true;
+	}
+	else{
+		isFormInvalid=false;
+	}
+	if(isFormInvalid){
+		$("#errorMessgSpan").text('');			
+		$("#errorMessgSpan").text(errorMessg);
+		$(".alert ").show();
+	}
+	else{			
+		$(".alert ").hide();	 
+	}
+}
+function ClearAllField() {
+	$("#name").val("");
+	$("#email").val("");
+	$("#lblUserName").text('');
+	$("#lblUserRole").text('');
+}
+
+function ShowButton(btnToShow) {
+	if (btnToShow == "btnAdd") {
+		$("#btnAdd").show();
+		$("#btnUpdate").hide();
+	} else {
+		$("#btnUpdate").show();
+		$("#btnAdd").hide();
+	}
+}
+
+$(document).on('click', '.delete-record', function() {
+	var vConfirm = window.confirm("Are sure to delete this row?")
+	if (vConfirm) {
+		$(this).closest('tr').remove();
+	}        
+});
+});
+</script>
+</head>
+<body>
+<div class="row">
+<label></label>
+</div>
+<div class="row">
+<div class="col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2">
+	<div class="panel panel-primary">
+		<div class="panel-heading">User: <span id='lblUserName'></span>Role: <span id='lblUserRole'></span></div>
+		<div class="panel-body">
+			<form class="form-inline">
+				<input type="text"   class="form-control" id="userName" 	placeholder="User Name">
+				<input type="button" class="btn btn-success" id="btnLoadUser"   	value="Load">  
+				<input type="text"   class="form-control" id="name" 	placeholder="Name">
+				<input type="text"   class="form-control" id="email" placeholder="Email Address">
+				<input type="text"   class="form-control" id="hiddenValue" style="display:none;">
+				<input type="button" class="btn btn-success" id="btnAdd"   	value="Add Row">       
+				<input type="button" class="btn btn-warning" id="btnUpdate"	value="Update" >       
+				<input type="button" class="btn btn-primary" id="clear"   	value="Clear">
+				<div class="alert alert-danger alert-dismissible">
+				  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+				  <span id="errorMessgSpan"></span>
+				</div>
+			</form>
+			<div class="tableFixHead" style="margin-top: 1%;">
+				<table id="EmpTable" class="table table-bordered table-hover">
+					<thead >
+						<tr>
+							<th>Name</th>
+							<th>Email</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>    
+</div>    
+</div>
+</body> 
+</html>
